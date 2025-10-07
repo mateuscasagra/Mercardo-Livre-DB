@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Mercardo Livre</string>
+    <string name="title_activity_app_navigation">AppNavigation</string>
+    <string name="title_activity_data">Data</string>
+    <string name="title_activity_favoritos_screen">FavoritosScreen</string>
+    <string name="title_activity_home_screen">HomeScreen</string>
+    <string name="title_activity_perfil_screen">PerfilScreen</string>
+    <string name="title_activity_promos_screen">PromosScreen</string>
+</resources>
