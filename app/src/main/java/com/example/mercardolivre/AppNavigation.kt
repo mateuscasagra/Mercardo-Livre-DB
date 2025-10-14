@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -34,7 +35,8 @@ fun AppNavigation(){
             val itens = listOf(
                 NavItem("Home", Icons.Default.Home, Screen.Home.rota),
                 NavItem("Favoritos", Icons.Default.Favorite, Screen.Favoritos.rota),
-                NavItem("Perfil", Icons.Default.Person, Screen.Perfil.rota)
+                NavItem("Perfil", Icons.Default.Person, Screen.Perfil.rota),
+                NavItem("Carrinho", Icons.Default.ShoppingCart, Screen.Carrinho.rota)
             )
 
             itens.forEach { item ->
@@ -86,6 +88,13 @@ fun AppNavigation(){
             }
             composable(route = Screen.Favoritos.rota) {
                 FavoritosScreen(
+                    onGoBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable(route = Screen.Carrinho.rota) {
+                CarrinhoScreen(
                     onGoBack = {
                         navController.popBackStack()
                     }

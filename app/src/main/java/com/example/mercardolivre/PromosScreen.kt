@@ -1,4 +1,3 @@
-
 package com.example.mercardolivre
 
 import androidx.compose.foundation.background
@@ -16,18 +15,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.LaunchedEffect
+
 
 
 @Composable
@@ -174,6 +178,10 @@ fun OfertasSection(modifier: Modifier = Modifier) {
 @Composable
 fun ProdutoCard(modifier: Modifier = Modifier) {
     val produtos = produtosEmPromocao(listaProdutos())
+
+    val context = LocalContext.current
+    val favoritosDAO = remember { AppDatabase.getDatabase(context).favoritosDAO() }
+    val carrinhoDAO = remember { AppDatabase.getDatabase(context).carrinhoDAO() }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
@@ -208,12 +216,19 @@ fun ProdutoCard(modifier: Modifier = Modifier) {
                         )
                     }
                     Column(modifier = Modifier.padding(8.dp)) {
-                        Text(
+                        Row (
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier =  Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        )
+                        { Text(
                             text = produto.titulo,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+                            BotaoFavorito(produto = produto, favoritosDAO = favoritosDAO) }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -224,7 +239,7 @@ fun ProdutoCard(modifier: Modifier = Modifier) {
                                 color = Color(0xFF0033A0),
                                 fontWeight = FontWeight.SemiBold
                             )
-                            BotaoFavorito()
+                            botaoCarrinho(produto = produto, carrinhoDAO = carrinhoDAO)
                         }
 
                     }
@@ -236,25 +251,63 @@ fun ProdutoCard(modifier: Modifier = Modifier) {
 
 
 @Composable
-fun BotaoFavorito() {
-
-
+fun BotaoFavorito(
+    produto: Produto,
+    favoritosDAO: com.example.mercardolivre.FavoritosDAO
+) {
     var isFavorito by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = produto) {
+        val favoritoExistente = favoritosDAO.buscarPeloNome(produto.titulo)
+        isFavorito = favoritoExistente != null
+    }
+
+    val scope = rememberCoroutineScope()
 
     IconButton(
         onClick = {
-            isFavorito = !isFavorito
 
+            val novoEstado = !isFavorito
+            isFavorito = novoEstado
+
+            scope.launch {
+                if (novoEstado) {
+                    val favoritoAdicionar = Favoritos(
+                        nomeProduto = produto.titulo,
+                        valor = produto.preco,
+                    )
+                    favoritosDAO.inserir(favoritoAdicionar)
+                } else {
+                    favoritosDAO.deletarPeloNome(produto.titulo)
+                }
+            }
         }
     ) {
         Icon(
-            // 2. O ícone exibido agora depende do estado da variável 'isFavorito'.
             imageVector = if (isFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
             contentDescription = if (isFavorito) "Remover dos favoritos" else "Adicionar aos favoritos",
             modifier = Modifier.size(25.dp),
-            // Bônus: Mude a cor também com base no estado!
             tint = if (isFavorito) Color.Red else Color.DarkGray
         )
+    }
+}
+
+@Composable
+fun botaoCarrinho(
+    produto: Produto,
+    carrinhoDAO: com.example.mercardolivre.CarrinhoDAO
+){
+
+    val scope = rememberCoroutineScope()
+    IconButton(onClick = {
+
+        scope.launch {
+            val carrinhoAdicionar = Carrinho(nomeProduto = produto.titulo,
+                valor = produto.preco,)
+            carrinhoDAO.inserir(carrinhoAdicionar)
+        }
+    }) {
+        Icon(Icons.Default.ShoppingCart, contentDescription = "Carrinho")
     }
 }
 

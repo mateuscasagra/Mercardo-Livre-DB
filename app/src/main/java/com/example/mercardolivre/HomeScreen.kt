@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -107,11 +108,6 @@ fun HomeScreen(onGoToPromos: () -> Unit) {
                         disabledIndicatorColor = Color.Transparent
                     )
                 )
-            },
-            actions = {
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = "Carrinho")
-                }
             }
         )
         BannerPromocional( onGoToPromos = onGoToPromos )
@@ -178,6 +174,9 @@ fun Icone(icone: ImageVector, texto: String){
 @Composable
 fun SecaoProdutos(){
     val produtos = listaProdutos()
+    val context = LocalContext.current
+    val carrinhoDAO = remember { AppDatabase.getDatabase(context).carrinhoDAO() }
+
     Column(modifier = Modifier.padding(horizontal = 16.dp)){
         Text("Também te interessa", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
@@ -188,9 +187,8 @@ fun SecaoProdutos(){
                 for(j in i until min(i + 3, produtos.size)){
                     val produto = produtos[j]
                     CardProduto(
-                        icone = produto.icone,
-                        titulo = produto.titulo,
-                        preco = produto.preco,
+                        produto = produto,
+                        carrinhoDAO = carrinhoDAO,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -201,7 +199,10 @@ fun SecaoProdutos(){
 }
 
 @Composable
-fun CardProduto(icone: ImageVector, titulo: String, preco: Double, modifier: Modifier = Modifier){
+fun CardProduto(produto: Produto,
+                carrinhoDAO: CarrinhoDAO,
+                modifier: Modifier = Modifier
+){
     Card(
         modifier = modifier,
         elevation = CardDefaults.cardElevation(4.dp)
@@ -217,8 +218,8 @@ fun CardProduto(icone: ImageVector, titulo: String, preco: Double, modifier: Mod
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = icone,
-                    contentDescription = titulo,
+                    imageVector = produto.icone,
+                    contentDescription = produto.titulo,
                     modifier = Modifier.size(72.dp),
                     tint = Color.Black
                 )
@@ -230,7 +231,7 @@ fun CardProduto(icone: ImageVector, titulo: String, preco: Double, modifier: Mod
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = titulo,
+                    text = produto.titulo,
                     fontSize = 15.sp,
                     maxLines = 2,
                     textAlign = TextAlign.Center
@@ -238,15 +239,23 @@ fun CardProduto(icone: ImageVector, titulo: String, preco: Double, modifier: Mod
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = "R$$preco",
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                text = "R$ ${produto.preco}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
+                botaoCarrinho(produto = produto, carrinhoDAO = carrinhoDAO)
+            }
+            }
+
         }
     }
-}
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

@@ -42,6 +42,7 @@ sealed class Screen(val rota: String){
     object Promos: Screen("tela_promos")
     object Perfil: Screen("tela_perfil")
     object Favoritos: Screen("tela_favoritos")
+    object Carrinho: Screen("tela_carrinho")
 }
 
 fun listaProdutos(): MutableList<Produto> {

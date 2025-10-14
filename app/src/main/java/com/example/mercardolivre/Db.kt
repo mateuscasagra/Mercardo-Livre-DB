@@ -1,6 +1,8 @@
-package com.empresa.bancoosorio
+package com.example.mercardolivre
+
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -16,31 +18,71 @@ import com.example.mercardolivre.Produto
 @Entity(tableName = "Favoritos")
 data class Favoritos(
     @PrimaryKey(autoGenerate = true)
-    val nomeProduto: String
+    val id: Int = 0,
+    val nomeProduto: String,
+    val valor: Double
 )
 
 @Dao
 interface FavoritosDAO{
 
     @Insert
-    suspend fun inserir(produto: String)
+    suspend fun inserir(produto: Favoritos)
 
     @Query("SELECT * FROM Favoritos")
-    suspend fun buscarTodos() : List<String>
+    suspend fun buscarTodos() : List<Favoritos>
 
     @Delete
-    suspend fun deletar(produto: String)
+    suspend fun deletar(produto: Favoritos)
+
+    @Query("DELETE FROM Favoritos WHERE nomeProduto = :nomeDoProduto")
+    suspend fun deletarPeloNome(nomeDoProduto: String)
+
+    @Query("SELECT * FROM Favoritos WHERE nomeProduto = :nomeDoProduto LIMIT 1")
+    suspend fun buscarPeloNome(nomeDoProduto: String): Favoritos?
+
+}
+
+@Entity(tableName = "Carrinho")
+data class Carrinho(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val nomeProduto: String,
+    val valor: Double
+)
+
+@Dao
+interface CarrinhoDAO{
+
+    @Insert
+    suspend fun inserir(produto: Carrinho)
+
+    @Query("SELECT * FROM Carrinho")
+    suspend fun buscarTodos() : List<Carrinho>
+
+    @Delete
+    suspend fun deletar(produto: Carrinho)
+
+    @Query("DELETE FROM Carrinho WHERE nomeProduto = :nomeDoProduto")
+    suspend fun deletarPeloNome(nomeDoProduto: String)
+
+    @Query("SELECT * FROM Carrinho WHERE nomeProduto = :nomeDoProduto LIMIT 1")
+    suspend fun buscarPeloNome(nomeDoProduto: String): Carrinho?
+
+    @Query("DELETE FROM Carrinho")
+    suspend fun deletarTudo()
+
 
 
 }
 
 
 
-
-@Database(entities = [Favoritos::class], version = 1)
+@Database(entities = [Favoritos::class, Carrinho::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun filmesDAO(): FavoritosDAO
+    abstract fun favoritosDAO(): FavoritosDAO
+    abstract fun carrinhoDAO(): CarrinhoDAO
 
     companion object {
 
@@ -60,7 +102,9 @@ abstract class AppDatabase : RoomDatabase() {
                         context.applicationContext,
                         AppDatabase::class.java,
                         "app_database"
-                    ).build()
+                    )
+                        .fallbackToDestructiveMigration()
+                        .build()
                     INSTANCE = instance
                     return instance
                 }
