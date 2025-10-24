@@ -20,39 +20,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mercardolivre.data.local.AppDatabase
+import com.example.mercardolivre.data.local.Carrinho
+import com.example.mercardolivre.data.repository.CarrinhoRepository
+import com.example.mercardolivre.ui.carrinho.CarrinhoViewModel
+import com.example.mercardolivre.ui.carrinho.CarrinhoViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CarrinhoScreen(onGoBack: () -> Unit) {
+fun CarrinhoScreen(
+    onGoBack: () -> Unit,
+    // Instancia o ViewModel usando a Factory [cite: 426]
+    viewModel: CarrinhoViewModel = viewModel(
+        factory = CarrinhoViewModelFactory(
+            CarrinhoRepository(AppDatabase.getDatabase(LocalContext.current).carrinhoDAO())
+        )
+    )
+) {
 
-    var listaDeItens by remember { mutableStateOf<List<Carrinho>>(emptyList()) }
-    val context = LocalContext.current
-    val carrinhoDAO = remember { AppDatabase.getDatabase(context).carrinhoDAO() }
-    val scope = rememberCoroutineScope()
+    // Coleta o estado do ViewModel de forma segura [cite: 361]
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val valorTotal = remember(listaDeItens) {
-        listaDeItens.sumOf { it.valor }
-    }
-
-    fun removerItem(item: Carrinho) {
-        scope.launch {
-            carrinhoDAO.deletarPeloNome(item.nomeProduto)
-            // Atualiza a lista na UI após a remoção
-            listaDeItens = carrinhoDAO.buscarTodos()
-        }
-    }
-
-    fun finalizarCompra(){
-        scope.launch {
-            carrinhoDAO.deletarTudo()
-            listaDeItens = emptyList()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        listaDeItens = carrinhoDAO.buscarTodos()
-    }
+    // A lógica de remoção e finalização foi movida para o ViewModel
+    // O CoroutineScope e o LaunchedEffect foram removidos
 
     Scaffold(
         topBar = {
@@ -69,16 +61,19 @@ fun CarrinhoScreen(onGoBack: () -> Unit) {
             )
         },
         bottomBar = {
-            if (listaDeItens.isNotEmpty()) {
+            // Lê o estado diretamente do uiState
+            if (uiState.itens.isNotEmpty()) {
                 TotalSection(
-                    valorTotal = valorTotal,
-                    onFinalizarCompra = { finalizarCompra() }
+                    valorTotal = uiState.valorTotal, // Lê do uiState
+                    // Notifica o ViewModel sobre o evento [cite: 355]
+                    onFinalizarCompra = { viewModel.finalizarCompra() }
                 )
             }
         }
     ) { paddingValues ->
 
-        if (listaDeItens.isEmpty()) {
+        // Lê o estado diretamente do uiState
+        if (uiState.itens.isEmpty()) {
             CarrinhoVazio(paddingValues)
         } else {
             LazyColumn(
@@ -89,10 +84,12 @@ fun CarrinhoScreen(onGoBack: () -> Unit) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(listaDeItens) { item ->
+                // Lê a lista do uiState
+                items(uiState.itens) { item ->
                     CarrinhoItemCard(
                         item = item,
-                        onRemoveClick = { removerItem(item) }
+                        // Notifica o ViewModel sobre o evento [cite: 347]
+                        onRemoveClick = { viewModel.removerItem(item) }
                     )
                 }
             }
@@ -100,6 +97,7 @@ fun CarrinhoScreen(onGoBack: () -> Unit) {
     }
 }
 
+// ... (O restante do arquivo CarrinhoItemCard, TotalSection, CarrinhoVazio, CarrinhoPreview não precisa de mudanças)
 @Composable
 fun CarrinhoItemCard(item: Carrinho, onRemoveClick: () -> Unit) {
     Card(
@@ -193,6 +191,7 @@ fun CarrinhoVazio(paddingValues: PaddingValues) {
 @Composable
 fun CarrinhoPreview() {
     MaterialTheme {
+        // Mock para o preview, não precisa do ViewModel
         CarrinhoScreen(onGoBack = {})
     }
 }

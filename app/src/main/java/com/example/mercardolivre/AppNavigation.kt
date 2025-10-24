@@ -21,6 +21,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 
+// Imports atualizados para a nova estrutura de pastas UI
+import com.example.mercardolivre.ui.favoritos.FavoritosScreen
+import com.example.mercardolivre.ui.perfil.PerfilScreen
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -71,6 +74,8 @@ fun AppNavigation(){
                 )
             }
 
+            // A chamada não muda, pois o ViewModel é criado
+            // como parâmetro padrão dentro da própria tela.
             composable(route = Screen.Promos.rota){
                 PromosScreen(
                     onGoBack = {
@@ -86,6 +91,8 @@ fun AppNavigation(){
                     }
                 )
             }
+
+            // A chamada não muda
             composable(route = Screen.Favoritos.rota) {
                 FavoritosScreen(
                     onGoBack = {
@@ -93,6 +100,8 @@ fun AppNavigation(){
                     }
                 )
             }
+
+            // A chamada não muda
             composable(route = Screen.Carrinho.rota) {
                 CarrinhoScreen(
                     onGoBack = {
@@ -102,7 +111,4 @@ fun AppNavigation(){
             }
         }
     }
-
-
-
 }

@@ -1,9 +1,8 @@
-package com.example.mercardolivre
+package com.example.mercardolivre.ui.favoritos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -11,11 +10,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,21 +20,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.mercardolivre.AppDatabase
-import com.example.mercardolivre.Favoritos
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mercardolivre.data.local.Favoritos
+import com.example.mercardolivre.data.local.AppDatabase
+import com.example.mercardolivre.data.repository.FavoritosRepository
+import com.example.mercardolivre.ui.favoritos.FavoritosViewModel
+import com.example.mercardolivre.ui.favoritos.FavoritosViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritosScreen(onGoBack: () -> Unit) {
-
-    var listaDeFavoritos by remember { mutableStateOf<List<Favoritos>>(emptyList()) }
-
-    val context = LocalContext.current
-    val favoritosDAO = remember { AppDatabase.getDatabase(context).favoritosDAO() }
-
-    LaunchedEffect(Unit) {
-        listaDeFavoritos = favoritosDAO.buscarTodos()
-    }
+fun FavoritosScreen(
+    onGoBack: () -> Unit,
+    viewModel: FavoritosViewModel = viewModel(
+        factory = FavoritosViewModelFactory(
+            FavoritosRepository(AppDatabase.getDatabase(LocalContext.current).favoritosDAO())
+        )
+    )
+) {
+    // Coleta o estado do ViewModel [cite: 361]
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // LaunchedEffect e o DAO local foram removidos
 
     Scaffold(
         topBar = {
@@ -57,7 +58,8 @@ fun FavoritosScreen(onGoBack: () -> Unit) {
         },
     ) { paddingValues ->
 
-        if (listaDeFavoritos.isEmpty()) {
+        // Lê o estado do uiState
+        if (uiState.favoritos.isEmpty()) {
             EmptyStateMessage(paddingValues)
         } else {
             LazyColumn(
@@ -68,14 +70,16 @@ fun FavoritosScreen(onGoBack: () -> Unit) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(listaDeFavoritos) { favorito ->
-                    FavoritoItemCard(favorito = favorito)
-                }
+                // Lê a lista do uiState
+//                items(uiState.favoritos) { favorito ->
+//                    FavoritoItemCard(favorito = favorito)
+//                }
             }
         }
     }
 }
 
+// ... (O restante do arquivo FavoritoItemCard, EmptyStateMessage, FavoritosPreview não precisa de mudanças)
 @Composable
 fun FavoritoItemCard(favorito: Favoritos) {
     Card(
@@ -145,8 +149,6 @@ fun EmptyStateMessage(paddingValues: PaddingValues) {
         }
     }
 }
-
-// --- Preview ---
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

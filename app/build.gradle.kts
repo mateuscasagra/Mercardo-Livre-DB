@@ -19,6 +19,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -43,7 +44,15 @@ android {
 dependencies {
 
     implementation("androidx.room:room-runtime:2.8.0")
+    // Adicionada dependência room-ktx
+    implementation("androidx.room:room-ktx:2.8.0")
     ksp("androidx.room:room-compiler:2.5.0")
+
+    // Dependências do ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -51,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+
     implementation(libs.androidx.material3)
     implementation("androidx.navigation:navigation-compose:2.9.4")
     testImplementation(libs.junit)

@@ -1,8 +1,7 @@
-package com.example.mercardolivre
+package com.example.mercardolivre.data.local
 
 
 import android.content.Context
-import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -12,8 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.Update
-import com.example.mercardolivre.Produto
+import kotlinx.coroutines.flow.Flow // Importar Flow
 
 @Entity(tableName = "Favoritos")
 data class Favoritos(
@@ -29,8 +27,9 @@ interface FavoritosDAO{
     @Insert
     suspend fun inserir(produto: Favoritos)
 
+    // Alterado para retornar Flow [cite: 206]
     @Query("SELECT * FROM Favoritos")
-    suspend fun buscarTodos() : List<Favoritos>
+    fun buscarTodos() : Flow<List<Favoritos>>
 
     @Delete
     suspend fun deletar(produto: Favoritos)
@@ -57,8 +56,9 @@ interface CarrinhoDAO{
     @Insert
     suspend fun inserir(produto: Carrinho)
 
+    // Alterado para retornar Flow [cite: 206]
     @Query("SELECT * FROM Carrinho")
-    suspend fun buscarTodos() : List<Carrinho>
+    fun buscarTodos() : Flow<List<Carrinho>>
 
     @Delete
     suspend fun deletar(produto: Carrinho)
@@ -71,8 +71,6 @@ interface CarrinhoDAO{
 
     @Query("DELETE FROM Carrinho")
     suspend fun deletarTudo()
-
-
 
 }
 

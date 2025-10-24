@@ -22,11 +22,13 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -49,15 +51,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// Imports do ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mercardolivre.data.local.AppDatabase
+import com.example.mercardolivre.data.repository.CarrinhoRepository
+import com.example.mercardolivre.data.repository.ProdutoRepository
+import com.example.mercardolivre.ui.home.HomeViewModel
+import com.example.mercardolivre.ui.home.HomeViewModelFactory
 import com.example.mercardolivre.ui.theme.MercardoLivreTheme
 import kotlin.math.min
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onGoToPromos: () -> Unit) {
+fun HomeScreen(
+    onGoToPromos: () -> Unit,
+    // 1. Instancia o ViewModel usando a Factory
+    viewModel: HomeViewModel = viewModel(
+        factory = HomeViewModelFactory(
+            produtoRepo = ProdutoRepository(),
+            carrinhoRepo = CarrinhoRepository(AppDatabase.getDatabase(LocalContext.current).carrinhoDAO())
+        )
+    )
+) {
 
-    var textPesquisa by remember { mutableStateOf("")}
+    // 2. Coleta o estado do ViewModel
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var textPesquisa by remember { mutableStateOf("") }
 
 
     Column (
@@ -101,10 +122,17 @@ fun HomeScreen(onGoToPromos: () -> Unit) {
         )
         BannerPromocional( onGoToPromos = onGoToPromos )
         SecaoIcons()
-        SecaoProdutos()
+        // 3. Passa o estado (produtos) e os eventos (clicks) para o Composable
+        SecaoProdutos(
+            produtos = uiState.produtos,
+            onCarrinhoClick = { produto ->
+                viewModel.adicionarAoCarrinho(produto)
+            }
+        )
     }
 }
 
+// ... (BannerPromocional e SecaoIcons não mudam) ...
 @Composable
 fun BannerPromocional( onGoToPromos: () -> Unit) {
     Card(
@@ -160,11 +188,16 @@ fun Icone(icone: ImageVector, texto: String){
     }
 }
 
+// 4. SecaoProdutos agora recebe a lista e o evento
 @Composable
-fun SecaoProdutos(){
-    val produtos = listaProdutos()
-    val context = LocalContext.current
-    val carrinhoDAO = remember { AppDatabase.getDatabase(context).carrinhoDAO() }
+fun SecaoProdutos(
+    produtos: List<Produto>,
+    onCarrinhoClick: (Produto) -> Unit
+){
+    // Removemos a lógica de busca do DAO daqui
+    // val produtos = listaProdutos()
+    // val context = LocalContext.current
+    // val carrinhoDAO = remember { AppDatabase.getDatabase(context).carrinhoDAO() }
 
     Column(modifier = Modifier.padding(horizontal = 16.dp)){
         Text("Também te interessa", style = MaterialTheme.typography.titleMedium)
@@ -177,7 +210,8 @@ fun SecaoProdutos(){
                     val produto = produtos[j]
                     CardProduto(
                         produto = produto,
-                        carrinhoDAO = carrinhoDAO,
+                        // 5. Passa o evento de clique para o CardProduto
+                        onCarrinhoClick = { onCarrinhoClick(produto) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -187,10 +221,12 @@ fun SecaoProdutos(){
     }
 }
 
+// 6. CardProduto agora recebe um lambda, não o DAO
 @Composable
-fun CardProduto(produto: Produto,
-                carrinhoDAO: CarrinhoDAO,
-                modifier: Modifier = Modifier
+fun CardProduto(
+    produto: Produto,
+    onCarrinhoClick: () -> Unit,
+    modifier: Modifier = Modifier
 ){
     Card(
         modifier = modifier,
@@ -234,17 +270,16 @@ fun CardProduto(produto: Produto,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                text = "R$ ${produto.preco}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-                botaoCarrinho(produto = produto, carrinhoDAO = carrinhoDAO)
+                    text = "R$ ${produto.preco}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                // 7. O botaoCarrinho agora só recebe o evento de clique
+                botaoCarrinho(onClick = onCarrinhoClick)
             }
-            }
-
         }
     }
-
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
