@@ -45,38 +45,6 @@ sealed class Screen(val rota: String){
     object Carrinho: Screen("tela_carrinho")
 }
 
-fun listaProdutos(): MutableList<Produto> {
-    var listaProdutos = mutableListOf(
-        Produto(Icons.Default.Favorite, "Meia", 100.00, true, false),
-        Produto(Icons.Default.Favorite, "Sapato", 100.00, true, false),
-        Produto(Icons.Default.Favorite, "Cinto", 100.00, false, false),
-        Produto(Icons.Default.Favorite, "Camisa", 100.00, true, false),
-        Produto(Icons.Default.Favorite, "Blusa", 100.00, true, false),
-        Produto(Icons.Default.Favorite, "Boné", 100.00, false, false)
-    )
-    return listaProdutos
-}
-
-fun produtosEmPromocao(listaProdutos: List<Produto>) : List<Produto>{
-    return listaProdutos.filter { produto -> produto.promo }.toMutableList()
-}
-
-fun listaUsuarios(): MutableList<User> {
-    var listaUsuarios = mutableListOf(
-        User(Icons.Default.Person, "Andre", "andre@gmail.com")
-    )
-
-    return listaUsuarios
-}
-
-fun listaPerfil(): MutableList<Opcao>{
-    var listaPerfil = mutableListOf(
-        Opcao(Icons.Default.List, "Suas Informações", "Nome de preferência e dados para te indentificar"),
-        Opcao(Icons.Default.Info, "Dados da sua conta", "Dados que representam sua conta"),
-        Opcao(Icons.Default.Lock, "Segurança", "Suas configurações de segurança"),
-        Opcao(Icons.Default.Lock, "Privacidade", "Preferências e controle do uso dos seus dados"),
-        Opcao(Icons.Default.LocationOn, "Endereços", "Endereços salvos na sua conta"),
-        Opcao(Icons.Default.Email, "Comunicações", "Escolha o tipo de informação que você deseja receber")
-    )
-    return listaPerfil
-}
+// As funções listaProdutos(), produtosEmPromocao(),
+// listaUsuarios() e listaPerfil() FORAM REMOVIDAS DAQUI
+// e movidas para seus respectivos Repositórios.

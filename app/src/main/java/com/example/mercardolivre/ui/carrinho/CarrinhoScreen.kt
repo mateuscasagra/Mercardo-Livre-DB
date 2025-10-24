@@ -26,21 +26,17 @@ import com.example.mercardolivre.data.local.AppDatabase
 import com.example.mercardolivre.data.local.Carrinho
 import com.example.mercardolivre.data.repository.CarrinhoRepository
 import com.example.mercardolivre.ui.carrinho.CarrinhoViewModel
-import com.example.mercardolivre.ui.carrinho.CarrinhoViewModelFactory
+// import com.example.mercardolivre.ui.carrinho.CarrinhoViewModelFactory // REMOVIDO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CarrinhoScreen(
     onGoBack: () -> Unit,
-    // Instancia o ViewModel usando a Factory [cite: 426]
-    viewModel: CarrinhoViewModel = viewModel(
-        factory = CarrinhoViewModelFactory(
-            CarrinhoRepository(AppDatabase.getDatabase(LocalContext.current).carrinhoDAO())
-        )
-    )
+    // Instancia o ViewModel SEM factory
+    viewModel: CarrinhoViewModel = viewModel()
 ) {
 
-    // Coleta o estado do ViewModel de forma segura [cite: 361]
+    // Coleta o estado do ViewModel de forma segura
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // A lógica de remoção e finalização foi movida para o ViewModel
@@ -65,7 +61,7 @@ fun CarrinhoScreen(
             if (uiState.itens.isNotEmpty()) {
                 TotalSection(
                     valorTotal = uiState.valorTotal, // Lê do uiState
-                    // Notifica o ViewModel sobre o evento [cite: 355]
+                    // Notifica o ViewModel sobre o evento
                     onFinalizarCompra = { viewModel.finalizarCompra() }
                 )
             }
@@ -88,7 +84,7 @@ fun CarrinhoScreen(
                 items(uiState.itens) { item ->
                     CarrinhoItemCard(
                         item = item,
-                        // Notifica o ViewModel sobre o evento [cite: 347]
+                        // Notifica o ViewModel sobre o evento
                         onRemoveClick = { viewModel.removerItem(item) }
                     )
                 }
@@ -97,7 +93,7 @@ fun CarrinhoScreen(
     }
 }
 
-// ... (O restante do arquivo CarrinhoItemCard, TotalSection, CarrinhoVazio, CarrinhoPreview não precisa de mudanças)
+// ... (O restante do arquivo não muda) ...
 @Composable
 fun CarrinhoItemCard(item: Carrinho, onRemoveClick: () -> Unit) {
     Card(

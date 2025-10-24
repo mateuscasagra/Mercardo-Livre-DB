@@ -58,7 +58,7 @@ import com.example.mercardolivre.data.local.AppDatabase
 import com.example.mercardolivre.data.repository.CarrinhoRepository
 import com.example.mercardolivre.data.repository.ProdutoRepository
 import com.example.mercardolivre.ui.home.HomeViewModel
-import com.example.mercardolivre.ui.home.HomeViewModelFactory
+// import com.example.mercardolivre.ui.home.HomeViewModelFactory // REMOVIDO
 import com.example.mercardolivre.ui.theme.MercardoLivreTheme
 import kotlin.math.min
 
@@ -67,13 +67,8 @@ import kotlin.math.min
 @Composable
 fun HomeScreen(
     onGoToPromos: () -> Unit,
-    // 1. Instancia o ViewModel usando a Factory
-    viewModel: HomeViewModel = viewModel(
-        factory = HomeViewModelFactory(
-            produtoRepo = ProdutoRepository(),
-            carrinhoRepo = CarrinhoRepository(AppDatabase.getDatabase(LocalContext.current).carrinhoDAO())
-        )
-    )
+    // 1. Instancia o ViewModel SEM factory
+    viewModel: HomeViewModel = viewModel()
 ) {
 
     // 2. Coleta o estado do ViewModel

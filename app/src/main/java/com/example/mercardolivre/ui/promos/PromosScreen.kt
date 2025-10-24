@@ -32,20 +32,14 @@ import com.example.mercardolivre.data.repository.CarrinhoRepository
 import com.example.mercardolivre.data.repository.FavoritosRepository
 import com.example.mercardolivre.data.repository.ProdutoRepository
 import com.example.mercardolivre.ui.promos.PromosViewModel
-import com.example.mercardolivre.ui.promos.PromosViewModelFactory
+// import com.example.mercardolivre.ui.promos.PromosViewModelFactory // REMOVIDO
 
 
 @Composable
 fun PromosScreen(
     onGoBack: () -> Unit,
-    // Instancia o ViewModel complexo com múltiplas dependências [cite: 426]
-    viewModel: PromosViewModel = viewModel(
-        factory = PromosViewModelFactory(
-            produtoRepo = ProdutoRepository(),
-            favoritosRepo = FavoritosRepository(AppDatabase.getDatabase(LocalContext.current).favoritosDAO()),
-            carrinhoRepo = CarrinhoRepository(AppDatabase.getDatabase(LocalContext.current).carrinhoDAO())
-        )
-    )
+    // Instancia o ViewModel SEM factory
+    viewModel: PromosViewModel = viewModel()
 ) {
     // Coleta o estado
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -76,8 +70,7 @@ fun PromosScreen(
     }
 }
 
-// ... (TopBar, BannerPrincipal, IconRow, ShortcutIcon não mudam) ...
-
+// ... (O resto do arquivo não muda) ...
 @Composable
 fun OfertasSection(
     modifier: Modifier = Modifier,
@@ -195,7 +188,7 @@ fun BotaoFavorito(
     onClick: () -> Unit
 ) {
     // A lógica de estado e coroutine foi removida
-    // Este Composable agora é "burro" [cite: 128]
+    // Este Composable agora é "burro"
     IconButton(onClick = onClick) {
         Icon(
             imageVector = if (isFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,

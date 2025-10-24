@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,13 +20,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mercardolivre.Opcao
-import com.example.mercardolivre.listaPerfil
-import com.example.mercardolivre.listaUsuarios
+import com.example.mercardolivre.User
+// import com.example.mercardolivre.listaPerfil // REMOVIDO
+// import com.example.mercardolivre.listaUsuarios // REMOVIDO
 
 
 @Composable
-fun PerfilScreen(onGoBack: () -> Unit) {
+fun PerfilScreen(
+    onGoBack: () -> Unit,
+    // 1. Instancia o ViewModel (sem factory)
+    viewModel: PerfilViewModel = viewModel()
+) {
+    // 2. Coleta o estado do ViewModel
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Scaffold(
         topBar = { PerfilTopBar( onGoBack = onGoBack ) },
     ) { paddingValues ->
@@ -36,8 +48,11 @@ fun PerfilScreen(onGoBack: () -> Unit) {
                 .background(Color(0xFFF0F0F0))
                 .verticalScroll(rememberScrollState())
         ) {
-            perfilBanner()
-            opcoesDoPerfil()
+            // 3. Passa os dados do uiState para os Composables
+            uiState.usuario?.let { user ->
+                perfilBanner(user = user)
+            }
+            opcoesDoPerfil(opcoes = uiState.opcoes)
 
         }
     }
@@ -79,9 +94,12 @@ fun ItemDeOpcao(opcao: Opcao, onClick: () -> Unit) {
 }
 
 @Composable
-fun opcoesDoPerfil(modifier: Modifier = Modifier){
-    val opcoes = listaPerfil()
-
+fun opcoesDoPerfil(
+    modifier: Modifier = Modifier,
+    // 4. Recebe a lista de opções vinda do state
+    opcoes: List<Opcao>
+){
+    // val opcoes = listaPerfil() // REMOVIDO
 
     Column(modifier = modifier) {
         Spacer(
@@ -103,8 +121,11 @@ fun opcoesDoPerfil(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun perfilBanner() {
-    val user = listaUsuarios().first()
+fun perfilBanner(
+    // 5. Recebe o usuário vindo do state
+    user: User
+) {
+    // val user = listaUsuarios().first() // REMOVIDO
     Box(
         modifier = Modifier
             .fillMaxWidth()

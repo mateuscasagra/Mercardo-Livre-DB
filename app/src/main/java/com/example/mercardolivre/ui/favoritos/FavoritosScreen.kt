@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,22 +22,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mercardolivre.data.local.Favoritos
-import com.example.mercardolivre.data.local.AppDatabase
-import com.example.mercardolivre.data.repository.FavoritosRepository
-import com.example.mercardolivre.ui.favoritos.FavoritosViewModel
-import com.example.mercardolivre.ui.favoritos.FavoritosViewModelFactory
-
+import androidx.compose.foundation.lazy.items
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritosScreen(
     onGoBack: () -> Unit,
-    viewModel: FavoritosViewModel = viewModel(
-        factory = FavoritosViewModelFactory(
-            FavoritosRepository(AppDatabase.getDatabase(LocalContext.current).favoritosDAO())
-        )
-    )
+    // Instancia o ViewModel SEM factory
+    viewModel: FavoritosViewModel = viewModel()
 ) {
-    // Coleta o estado do ViewModel [cite: 361]
+    // Coleta o estado do ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     // LaunchedEffect e o DAO local foram removidos
 
@@ -71,15 +63,15 @@ fun FavoritosScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Lê a lista do uiState
-//                items(uiState.favoritos) { favorito ->
-//                    FavoritoItemCard(favorito = favorito)
-//                }
+                items(uiState.favoritos) { favorito ->
+                    FavoritoItemCard(favorito = favorito)
+                }
             }
         }
     }
 }
 
-// ... (O restante do arquivo FavoritoItemCard, EmptyStateMessage, FavoritosPreview não precisa de mudanças)
+// ... (O restante do arquivo não muda) ...
 @Composable
 fun FavoritoItemCard(favorito: Favoritos) {
     Card(

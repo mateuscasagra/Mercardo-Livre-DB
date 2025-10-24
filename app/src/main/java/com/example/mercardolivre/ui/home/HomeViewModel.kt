@@ -1,9 +1,10 @@
 package com.example.mercardolivre.ui.home
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mercardolivre.Produto
+import com.example.mercardolivre.data.local.AppDatabase
 import com.example.mercardolivre.data.local.Carrinho
 import com.example.mercardolivre.data.repository.CarrinhoRepository
 import com.example.mercardolivre.data.repository.ProdutoRepository
@@ -18,11 +19,14 @@ data class HomeUiState(
     val produtos: List<Produto> = emptyList()
 )
 
-// 2. Cria o ViewModel
-class HomeViewModel(
-    private val produtoRepository: ProdutoRepository,
-    private val carrinhoRepository: CarrinhoRepository
-) : ViewModel() {
+// 2. Herda de AndroidViewModel e remove repositórios do construtor
+class HomeViewModel(application: Application) : AndroidViewModel(application) {
+
+    // 3. Instancia os repositórios internamente
+    private val produtoRepository: ProdutoRepository = ProdutoRepository()
+    private val carrinhoRepository: CarrinhoRepository = CarrinhoRepository(
+        AppDatabase.getDatabase(application).carrinhoDAO()
+    )
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -39,7 +43,7 @@ class HomeViewModel(
         }
     }
 
-    // 3. Funções que representam eventos da UI
+    // 4. Funções que representam eventos da UI
     fun adicionarAoCarrinho(produto: Produto) {
         viewModelScope.launch {
             val item = Carrinho(nomeProduto = produto.titulo, valor = produto.preco)
@@ -49,16 +53,4 @@ class HomeViewModel(
     }
 }
 
-// 4. Factory para injetar os Repositórios
-class HomeViewModelFactory(
-    private val produtoRepo: ProdutoRepository,
-    private val carrinhoRepo: CarrinhoRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(produtoRepo, carrinhoRepo) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
+// O arquivo HomeViewModelFactory.kt pode ser DELETADO

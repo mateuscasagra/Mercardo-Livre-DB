@@ -1,9 +1,10 @@
 package com.example.mercardolivre.ui.promos
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mercardolivre.Produto
+import com.example.mercardolivre.data.local.AppDatabase
 import com.example.mercardolivre.data.local.Carrinho
 import com.example.mercardolivre.data.local.Favoritos
 import com.example.mercardolivre.data.repository.CarrinhoRepository
@@ -20,11 +21,17 @@ data class PromosUiState(
     val favoritosNomes: Set<String> = emptySet() // Usar um Set de nomes para checagem rápida
 )
 
-class PromosViewModel(
-    private val produtoRepository: ProdutoRepository,
-    private val favoritosRepository: FavoritosRepository,
-    private val carrinhoRepository: CarrinhoRepository
-) : ViewModel() {
+// 1. Herda de AndroidViewModel e remove repositórios do construtor
+class PromosViewModel(application: Application) : AndroidViewModel(application) {
+
+    // 2. Instancia os repositórios internamente
+    private val produtoRepository: ProdutoRepository = ProdutoRepository()
+    private val favoritosRepository: FavoritosRepository = FavoritosRepository(
+        AppDatabase.getDatabase(application).favoritosDAO()
+    )
+    private val carrinhoRepository: CarrinhoRepository = CarrinhoRepository(
+        AppDatabase.getDatabase(application).carrinhoDAO()
+    )
 
     private val _uiState = MutableStateFlow(PromosUiState())
     val uiState: StateFlow<PromosUiState> = _uiState.asStateFlow()
@@ -73,16 +80,4 @@ class PromosViewModel(
     }
 }
 
-class PromosViewModelFactory(
-    private val produtoRepo: ProdutoRepository,
-    private val favoritosRepo: FavoritosRepository,
-    private val carrinhoRepo: CarrinhoRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PromosViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PromosViewModel(produtoRepo, favoritosRepo, carrinhoRepo) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
+// O arquivo PromosViewModelFactory.kt pode ser DELETADO
